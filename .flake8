@@ -1,0 +1,4 @@
+[flake8]
+per-file-ignores =
+     lab/src/bombe/tensorboard_marian_logparser.py: W605
+     lab/src/bombe/training.py: W605

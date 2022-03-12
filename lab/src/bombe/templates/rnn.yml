@@ -1,0 +1,22 @@
+# valid-sets: 
+#  - /work/{strategy}/{soruce-lang}-{target-lang}/corpus.test.{source-lang}
+#  - /work/{strategy}/{soruce-lang}-{target-lang}/corpus.test.{target-lang}
+# vocabs:
+#   - /models/{strategy}/{soruce-lang}-{target-lang}/vocab.{source-lang}.yml
+#   - /models/{strategy/{source-lang}-{target_lang}/vocab.{target-lang}.yml
+dim-vocabs:
+  - 100000
+  - 100000
+valid-freq: 5000
+valid-metrics: 
+  - cross-entropy 
+  - translation
+early-stopping: 5
+# model: /models/{strategy}/{source_lang}-{target_lang}/model.npz
+
+max-length: 100
+max-length-crop: 1
+maxi-batch-sort: none
+shuffle: none
+
+

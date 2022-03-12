@@ -1,0 +1,37 @@
+dim-vocabs:
+  - 50000
+  - 50000
+valid-freq: 10000
+valid-metrics: 
+  - bleu-detok
+  - cross-entropy
+  - perplexity
+  - ce-mean-words
+cost-type: ce-mean-words
+early-stopping: 5
+type: transformer
+enc-depth: 6
+dec-depth: 6
+transformer-heads: 8
+keep-best: true
+workspace: 8000
+max-length: 100
+mini-batch-fit: true
+maxi-batch: 1000
+valid-mini-batch: 64
+beam-size: 6
+normalize: 0.6
+label-smoothing: 0.1
+learn-rate: 0.0003
+lr-report: true
+lr-warmup: 16000
+lr-decay-inv-sqrt: 16000
+optimizer-params:
+ - 0.9
+ - 0.98
+ - 1e-09
+clip-norm: 5
+tied-embeddings-all: true
+seed: 1111
+exponential-smoothing: true
+quiet-translation: true

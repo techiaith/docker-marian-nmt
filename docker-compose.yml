@@ -1,0 +1,63 @@
+version: "3.7"
+
+services:
+  bombe-lab:
+    image: techiaith/marian-nmt-lab:0.1
+    runtime: nvidia
+    container_name: bombe-lab
+    build:
+      context: ./lab
+      args:
+        marian_compile_server: "${MARIAN_COMPILE_SERVER:-off}"
+    volumes:
+      - ./dictionaries:/dictionaries
+      - ./experiments:/experiments
+      - ./notebooks:/notebooks
+      - ./server-models:/server-models
+      - ./lab/src:/home/techiaith/app
+    entrypoint: ["supervisord", "-c", "/experiments/config/supervisord.conf"]
+    ports:
+      - "8888:8888" # tensorboard graphs
+      - "9001:9001" # supervisorctrl
+      - "9010:9010" # jupyter notbook
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+  bombe-server:
+    image: techiaith/marian-nmt-api:0.1
+    runtime: nvidia
+    container_name: bombe-api
+    build:
+      context: ./server
+      args:
+        marian_compile_server: "${MARIAN_COMPILE_SERVER:-on}"
+    environment:
+      - "MARIAN_MODEL_NAME=${MARIAN_MODEL_NAME}"
+      - "API_ALLOW_CORS_ORIGINS=${API_ALLOW_CORS_ORIGINS}"
+    volumes:
+      - ./server-models:/models
+      - ./server-logs:/logs
+      - ./server-config:/config
+      - ./server/src:/home/techiaith/app
+    entrypoint: ["supervisord", "-c", "/config/supervisord.conf"]
+    ports:
+      - "8000:8000" # Fast API
+      - "8880:8080" # marian-server WebSocket
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+volumes:
+  dictionaries:
+  experiments:
+  notebooks:
+  server-config:
+  server-logs:
+  server-models:

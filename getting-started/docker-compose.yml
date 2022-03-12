@@ -1,0 +1,19 @@
+version: "3.1"
+
+services:
+  techiaith-marian-nmt:
+    image: techiaith/docker-marian-nmt-api:latest
+    container_name:
+    environment:
+      - "MARIAN_MODEL_NAME=${MARIAN_MODEL_NAME}"
+    volumes:
+      - ./server-models:/models
+      - ./server-logs:/logs
+      - ./server-config:/config
+    entrypoint: ["supervisord", "-c", "/config/supervisord.conf"]
+    ports:
+      - "8000:8000"
+volumes:
+  server-config:
+  server-logs:
+  server-models:

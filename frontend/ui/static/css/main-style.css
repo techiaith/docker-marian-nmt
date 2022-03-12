@@ -1,0 +1,86 @@
+body {
+  font-family: 'Quattrocento Sans', sans-serif;
+}
+
+textarea.translation-box {
+  min-height: 300px;
+  max-height: 600px;
+  border: none;
+  font-size: 20px;
+  border-radius:10px;
+  outline: none;
+  transition: box-shadow .3s ease;
+  box-shadow: 1px 1px 10px 1px #58A4B0;
+}
+
+.demo { min-width: 80%; }
+
+textarea.translation-box:-ms-input-placeholder {color: #1F363D;}
+textarea.translation-box::-moz-placeholder {color: ##1F363D;}
+textarea.translation-box::-webkit-input-placeholder {color: ##1F363D;}
+
+textarea.translation-box:focus{
+  2px solid #00000f;
+  cursor: hand;
+}
+textarea.translation-box:focus,
+textarea.translation-box:hover{
+  box-shadow: 0px 0px 13px 0px #00000f;
+  cursor: pointer;
+}
+
+textarea#translation-box[readonly] {
+  background: lightgrey;
+}
+
+.hif {
+    height: 6vh;
+}
+
+.mand > span {
+    font-size: 11px;
+}
+
+.text-box {
+  margin: 30px auto;
+  width: 100%;
+}
+
+.clipboard.icon {
+  position: relative;
+  bottom: 40px;
+  left: 10px;
+  margin-top: 4px;
+  margin-left: 4px;
+  width: 11px;
+  height: 13px;
+  #border: solid 1px #333333;
+  #border-top: none;
+  #border-radius: 1px;
+  cursor: pointer;
+}
+.clipboard.icon:before {
+  bottom: -1px;
+  left: 2px;
+  width: 5px;
+  height: 1px;
+  #border: solid 1px #333333;
+  border-radius: 1px;
+}
+.clipboard.icon:after {
+  width: 3px;
+  height: 1px;
+  background-color: #333333;
+  box-shadow: 8px 0 0 0 #333333;
+}
+
+.custom-alert {
+  position: absolute;
+  top: 50px;
+  right: 50px;
+}
+
+.sub-head {
+  font-weight: 700;
+  font-size: 25px;
+}

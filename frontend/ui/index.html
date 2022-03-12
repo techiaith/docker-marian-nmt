@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="cy">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <link rel="icon" type="image/x-icon" href="/static/img/swirl.png">
+    <title>Cyfieithu peirianyddol yn y maes penodol: Iechyd a Gofal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quattrocento+Sans"
+          rel="stylesheet">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/main-style.css" rel="stylesheet">
+</head>
+<body>
+  <header class="navbar navbar-expand-md navbar-light bg-light">
+    <nav class="container-xxl flex-wrap flex-md-nowrap" aria-label="Main navigation">
+      <a class="navbar-brand p-0 me-2" href="/" aria-label="Bootstrap">
+        <img src="/static/img/swirl.png"
+             class="navbar-brand p-0 me-2"
+             height="40px"
+             title="Catref"
+             alt="cyfieithu.techiaith.cymru">
+        <span class="fs-4">cyfieithu.techiaith.cymru</span>
+      </a>
+      <button class="navbar-toggler"
+	      type="button"
+	      data-bs-toggle="collapse"
+	      data-bs-target="#bdNavbar"
+              aria-controls="bdNavbar"
+	      aria-expanded="false"
+	      aria-label="Toggle navigation">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="collapse navbar-collapse" id="bdNavbar">
+        <ul class="navbar-nav flex-row flex-wrap bd-navbar-nav pt-2 py-md-0">
+          <li class="nav-item col-6 col-md-auto">
+            <a class="nav-link p-2" href="/"
+               onclick="ga('send', 'event', 'Navbar', 'Community links', 'Bootstrap');">Catref</a>
+          </li>
+          <li class="nav-item col-6 col-md-auto">
+            <a class="nav-link p-2" href="/api/"
+               onclick="ga('send', 'event', 'Navbar', 'Community links', 'API');">API</a>
+          </li>
+        </ul>
+        <hr class="d-md-none text-white-50">
+        <ul class="navbar-nav flex-row flex-wrap ms-md-auto">
+          <li class="nav-item col-6 col-md-auto">
+            <a class="nav-link p-2"
+	       href="https://github.com/techiaith"
+	       target="_blank"
+	       rel="noopener">
+              <i class="fa-brands fa-github fa-xl" title="Github"></i>
+            </a>
+          </li>
+          <li class="nav-item col-6 col-md-auto">
+            <a class="nav-link p-2"
+	       href="https://twitter.com/techiaith"
+	       target="_blank" rel="noopener">
+              <i class="fa-brands fa-twitter fa-xl" title="Twtter"></i>
+            </a>
+          </li>
+          <li class="nav-item col-6 col-md-auto">
+            <a class="nav-link p-2"
+	       href="https://www.facebook.com/UnedTechnolegauIaith"
+	       target="_blank"
+               rel="noopener">
+              <i class="fa-brands fa-facebook fa-xl" title="Facebook"></i>
+            </a>
+          </li>
+          <li class="nav-item col-6 col-md-auto">
+            <a class="nav-link pt-2"
+	       href="http://techiaith.cymru"
+	       target="_blank"
+	       rel="noopener">
+              <img src="/static/img/swirl.png"
+		   alt="Safle Techiaith"
+		   title="techiaith.cymru"
+		   height="24px">
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <div class="container pt-1">
+    <div class="pb-1 pt-2 text-center">
+      <h1>Cyfieithu Peirianyddol</h1>
+      <div>
+	yn y maes penodol <span class="sub-head">Iechyd a gofal</span>
+      </div>
+    </div>
+    <form class="row"
+	  name="translator"
+	  id="translator"
+	  method="POST"
+	    action="#">
+      <div class="col-lg-6 col-md-12">
+	  <div class="text-box">
+            <textarea class="form-control translation-box"
+                      aria-label="Source text"
+                      name="source_text"
+                      id="source_text"
+                      placeholder="Teipiwch destun Saesneg yma ...">
+            </textarea>
+          </div>
+	</div>
+	<div class="col-lg-6 col-md-12">
+	  <div class="text-box">
+            <div class="text-container">
+	      <textarea class="form-control translation-box"
+			aria-label="Translation"
+			name="translation"
+			id="translation"
+			disabled
+			readonly>
+              </textarea>
+	      <div id="copyToClipboard-a" class="clipboard icon">
+		<i class="fa-regular fa-copy fa-xl" title="Copïo cyfieithiad"></i>
+	      </div>
+            </div>
+          </div>
+	</div>
+	<div class="col-12 text-end button-row">
+	  <button type="reset"
+		  id="btn-reset"
+		  class="btn btn-secondary disabled">Ailosod
+	  </button>
+	  <button type="submit"
+			id="btn-translate"
+			class="btn btn-success disabled">Cyfieithu
+	  </button>
+	</div>
+	<div class="col-12 text-end alert alert-light alert-dismissable fade hide"
+	     role="alert"
+	     id="translation-warnings">
+	  <i id="warning-message"></i>
+	  <i class="fa-regular fa-exclamation"></i>
+	  <button type="button"
+		  class="btn-close btn-sm"
+		  data-bs-dismiss="alert"
+		  aria-label="Close">
+	  </button>
+	</div>
+    </form>
+  </div>
+  <br><br><br><br><br><br><br><br><br><br><br><br>
+  <footer class="border-top fixed-bottom text-center bg-light pt-2">
+    <div class="container mt-2">
+      <div class="row">
+        <div class="col">
+          <a href="http://techiaith.cymru" class="nav-link p-0 link-dark text-decoration-none">
+            <img src="/static/img/uti_logo.png"
+		 alt="techiaith.cymru"
+		 title="techiaith.cymru"
+		 class="navbar-brand p-0 me-2 hif">
+          </a>
+        </div>
+        <div class="col">
+          <a href="https://bangor.ac.uk" class="nav-link p-0 text-muted">
+            <img src="/static/img/bu_logo.png"
+		 alt="Prifysgol Bangor"
+		 title="Prifysgol Bangor"
+		 class="navbar-brand p-0 me-2 hif">
+          </a>
+        </div>
+        <div class="col">
+          <a href="https://llyw.cymru" class="nav-link p-0 text-muted">
+            <img src="/static/img/llwy_logo.png"
+		 alt="llyw.cymru"
+		 title="llyw.cymru"
+		 class="navbar-brand p-0 me-2 hif">
+          </a>
+        </div>
+        <div class="col-12">
+          <p class="nav-item mand">
+            <span class="mr-2">Elusen Gofrestredig: Rhif 1141565</span>
+	    <span class="mr-2">&VerticalLine;</span>
+            <span class="mr-2">Hawlfraint &copy;
+              <span id="blywddyn"></span>
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <div class="mt-5 custom-alert alert alert-danger alert-dismissable fade hide"
+       role="alert"
+       id="translation-errors">
+    <button type="button"
+	    class="btn-close btn-sm"
+	    data-bs-dismiss="alert"
+	    aria-label="Close">
+    </button>
+  </div>
+  <script src="/static/js/jquery-2.2.0.min.js"></script>
+  <script src="/static/js/bootstrap.min.js"></script>
+  <script>
+  </script>
+  <script src="/static/js/app.js"></script>
+  <script src="https://kit.fontawesome.com/cb6394fb3d.js" crossorigin="anonymous"></script>
+</body>
+</html>
