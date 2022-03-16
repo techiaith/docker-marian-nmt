@@ -8,7 +8,6 @@ from typing import Dict
 from dotenv import load_dotenv, find_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import RedirectResponse
 import srsly
 
 from . import data, config, controllers

@@ -5,8 +5,10 @@
 Mae'r project hwn yn cynnwys cod, sgriptiau a dogfennaeth sy'n eich galluogi chi
 i greu peiriant cyfieithu peirianyddol [Marian NMT][1] eich hunan.
 
-Os oes gennych docker wedi'i osod ac yn rhedeg ar eich cyfrifiadur, wedyn mae'n hwylus
-i ddechrau mynd ymlaen a gosod un o'r lluniau docker sydd wedi'u darparu:
+Os oes gennych [cerdyn graffeg NVIDIA hefo cefnogaeth][14], ac docker
+wedi'i osod ac yn rhedeg ar eich cyfrifiadur, wedyn mae'n hwylus i
+ddechrau mynd ymlaen a gosod un o'r lluniau docker sydd wedi'u
+darparu:
 
 1. [Marian NMT API service][2]
 
@@ -108,3 +110,4 @@ Technoleg Cymraeg 2021-22.
 [11]: https://opensource.org/licenses/MTI
 [12]: https://www.microsoft.com/store/productId/9PJPW5LDXLZ5
 [13]: https://www.python.org/
+[14]: https://en.wikipedia.org/wiki/CUDA#GPUs_supported

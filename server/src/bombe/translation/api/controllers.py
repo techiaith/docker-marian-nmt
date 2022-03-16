@@ -13,9 +13,7 @@ import websocket
 
 class MarianServer:
 
-    marain_server_cmd = ('marian-server --allow-unk '
-                         '--log /logs/marian-server.log '
-                         '-c {config_path}')
+    marain_server_cmd = 'marian-server --allow-unk -c {config_path}'
 
     def __init__(self,
                  config_path: Path,

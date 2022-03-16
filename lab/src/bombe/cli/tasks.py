@@ -183,12 +183,7 @@ def score(ctx, split_number, training_session_id, save_results):
     vt_out = model_path(f'valid.{langs.target}.out')
     scores = marian_nmt.score(langs, models_dir, work_dir, log, vt_out)
     if save_results:
-        _save_results(langs,
-                      ts,
-                      split_number,
-                      scores,
-                      log,
-                      work_dir)
+        _save_results(langs, ts, split_number, scores, log, work_dir)
     scores_summary = {metric: d['score'] for (metric, d) in scores.items()}
     echo(srsly.json_dumps(scores_summary))
 

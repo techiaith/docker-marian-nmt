@@ -15,10 +15,25 @@ setup-hunspell: $(call print-help,setup-hunspell,Configure hunspell dictionaries
 	@./setup-hunspell-dictionaries.sh dictionaries
 
 lab-build: $(call print-help,lab-build,Builds the docker container for the bombe Lab.) setup-hunspell
-	@./dc.sh _dc_build bombe-lab  \
-                           techiaith \
-                           lab/supervisord.conf experiments/config \
-                           experiments/{logs,config} notebooks
+	@mkdir -p -m 770 experiments/{logs,config} notebooks
+	@chown -R ${UID}:${GID} experiments/{logs,config} notebooks
+	@./dc.sh _dc build bombe-lab \
+                     --build-arg uid=${UID} \
+                     --build-arg gid=${GID} \
+                     --build-arg app_user=techiaith \
+                     --force-rm
+
+lab-build-release: $(call print-help,server-release-build,Build docker image for release.)
+	@mkdir -p -m 770 experiments/{logs,config} notebooks
+	@chown -R ${UID}:${GID} experiments/{logs,config} notebooks
+	@cd lab; python setup.py bdist_wheel -d ${PWD}/lab
+	@./dc.sh _dc build bombe-lab \
+                     --build-arg uid=${UID} \
+                     --build-arg gid=${GID} \
+                     --build-arg app_user=techiaith \
+                     --build-arg release_wheel=techiaith_marian_nmt_lab-${VERSION}-py3-none-any.whl \
+                     --force-rm
+	-rm -f lab/*.whl
 
 lab-restart: $(call print-help,lab-restart,Restart the NMT lab.)
 	@./dc.sh _dc restart bombe-lab
@@ -36,10 +51,24 @@ lab-supervisor: $(call print-help,lab-supervisor,Access superverisorctl on the N
 	@./dc.sh supervisorctl bombe-lab ${SUPERVISORCTL_ARGS}
 
 server-build: $(call print-help,server-build,Builds the docker container for the server.)
-	@./dc.sh _dc_build bombe-server \
-                           techiaith \
-                           server/supervisord.conf server-config \
-                           server-{config,logs,models}
+	@mkdir -p -m 770 server-models
+	@chown -R ${UID}:${GID} server-models
+	@./dc.sh _dc build bombe-server \
+                     --build-arg uid=${UID} \
+                     --build-arg gid=${GID} \
+                     --build-arg app_user=techiaith \
+                     --force-rm
+
+server-build-release: $(call print-help,server-release-build,Build docker image for release.)
+	@mkdir -p -m 770 server-{config,logs,models}
+	@chown -R ${UID}:${GID} server-{config,logs,models}
+	@cd server; python setup.py bdist_wheel -d ${PWD}/server
+	@./dc.sh _dc build bombe-server \
+                     --build-arg uid=${UID} \
+                     --build-arg gid=${GID} \
+                     --build-arg app_user=techiaith \
+                     --build-arg release_wheel=techiaith_marian_nmt_api-${VERSION}-py3-none-any.whl
+	-rm -f server/*.whl
 
 server-run: $(call print-help,server-run,Run the API server.)
 	@./dc.sh _dc up --remove-orphans -d bombe-server

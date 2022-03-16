@@ -4,11 +4,14 @@ from importlib import resources as ir
 from itertools import repeat
 from numbers import Number
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Tuple, Union
+import io
+import random
 import shutil
+import sys
 
 from more_itertools import flatten
-from techiaith.utils.bitext import LanguagePair
+from techiaith.utils.bitext import LanguagePair, normalize
 import jiwer
 import sacrebleu
 import sentencepiece as spm
@@ -19,7 +22,6 @@ from .utils import commands, fs
 
 
 DECODER_CONFIG_FILENAME = 'model.npz.best-bleu-detok.npz.decoder.yml'
-# DECODER_CONFIG_FILENAME = 'model.npz.decoder.yml'
 
 
 def read_config_template() -> Dict:
@@ -27,16 +29,48 @@ def read_config_template() -> Dict:
     return srsly.yaml_loads(template)
 
 
-def write_combined_test_sets(src_path, ref_path, hyp_path, out_path):
-    with fs.open_utf8(out_path, 'w') as out_fp:
+def _enumerated_line_map(fp):
+    return dict((i, normalize(line.strip()))
+                for (i, line) in enumerate(fp, start=1))
+
+
+def write_combined_test_sets(src_path: Path,
+                             ref_path: Path,
+                             hyp_path: Path,
+                             out_path: Optional[Union[Path, io.BytesIO]]=None,
+                             n_samples: Optional[int]=381):
+    if isinstance(out_path, (str, Path)):
+        out_fp = fs.open_utf8(out_path, mode='w', encoding='utf-8')
+    elif hasattr(out_path, 'write'):
+        pass
+    else:
+        out_fp = sys.stdout
+    with out_fp:
         with (fs.open_utf8(src_path) as src_fp,
               fs.open_utf8(ref_path) as ref_fp,
               fs.open_utf8(hyp_path) as hyp_fp):
-            for line in src_fp:
-                out_fp.write('src: ' + line.rstrip() + '\n')
-                out_fp.write('ref: ' + ref_fp.readline().rstrip() + '\n')
-                out_fp.write('hyp: ' + hyp_fp.readline().rstrip() + '\n')
+            src_m = dict((text, i)
+                         for (i, text) in _enumerated_line_map(src_fp).items())
+            ref_m = _enumerated_line_map(ref_fp)
+            hyp_m = _enumerated_line_map(hyp_fp)
+            src_samples = random.sample(sorted(src_m), n_samples)
+            for src_sample in src_samples:
+                i = src_m[src_sample]
+                (ref, hyp) = (ref_m[i], hyp_m[i])
+                out_fp.write('-' * 80 + '\n')
                 out_fp.write('\n')
+                out_fp.write('SEGMENT: {:d}\n'.format(i))
+                out_fp.write(f'src: {src_sample}\n')
+                out_fp.write(f'ref: {ref}\n')
+                out_fp.write(f'hyp: {hyp}\n')
+                out_fp.write('\n')
+                out_fp.write('REF PROBLEMUS:\n')
+                out_fp.write('HYP PROBLEMUS:\n')
+                out_fp.write('SYLW:\n')
+                for _ in range(2):
+                    out_fp.write('\n')
+    return out_fp.name
+
 
 
 def _sentence_iterator(paths):
@@ -186,6 +220,7 @@ def score(langs: LanguagePair,
           work_dir: Path,
           log: Path,
           vt_out: Path,
+          num_combined_samples: Optional[int] = 381,
           test_set_prefix: str = 'corpus.test') -> Dict:
     """Obtain scores from the current training run.
 

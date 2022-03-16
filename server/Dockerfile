@@ -1,21 +1,21 @@
 # syntax=docker/dockerfile:1
-FROM nvidia/cuda:11.4.0-devel-ubuntu20.04
+FROM nvidia/cuda:11.6.0-devel-ubuntu20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TZ=Europe/London
 
-ARG gitlab_oauth_token
 ARG app_user
 ARG uid
 ARG gid
 ARG marian_compile_server
+ARG release_wheel
 
-ENV GITLAB_OAUTH_TOKEN=$gitlab_oauth_token
 ENV USER=$app_user
 ENV UID=$uid
 ENV GID=$gid
 ENV HOME=/home/$USER
 ENV APP_DIR=$HOME/app
+ENV RELEASE_WHEEL=/tmp/$release_wheel
 
 RUN build_deps="curl" && \
     apt update && \
@@ -84,15 +84,13 @@ RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py39_4.1
     echo PATH=$CONDA_HOME/bin:$PATH >> $HOME/.bashrc && \
     conda install -c conda-forge cld2-cffi
 
-# Install app requirements.
-COPY requirements.txt /tmp/
-RUN $CONDA_HOME/bin/python -m pip install --no-cache-dir -r /tmp/requirements.txt
+COPY supervisord.conf .env $HOME/
 
-# Copy app environment settings.
-COPY .env $HOME/
+# .whl file should only exist if doing a release.
+COPY requirements.txt *.whl /tmp/
+
+# Install app requirements.
+RUN $CONDA_HOME/bin/python -m pip install --no-cache-dir -r /tmp/requirements.txt
+RUN if [[ ! -z $release_wheel ]] ; then echo "Installing $RELEASE_WHEEL" && $CONDA_HOME/bin/python -m pip install $RELEASE_WHEEL; else echo "RELEASE WHEEL NOT FOUND: $RELEASE_WHEEL"; fi
 
 WORKDIR $HOME
-
-
-
-

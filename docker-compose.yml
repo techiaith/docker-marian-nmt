@@ -15,7 +15,7 @@ services:
       - ./notebooks:/notebooks
       - ./server-models:/server-models
       - ./lab/src:/home/techiaith/app
-    entrypoint: ["supervisord", "-c", "/experiments/config/supervisord.conf"]
+    entrypoint: ["supervisord", "-c", "/home/techiaith/supervisord.conf"]
     ports:
       - "8888:8888" # tensorboard graphs
       - "9001:9001" # supervisorctrl
@@ -40,10 +40,11 @@ services:
       - "API_ALLOW_CORS_ORIGINS=${API_ALLOW_CORS_ORIGINS}"
     volumes:
       - ./server-models:/models
-      - ./server-logs:/logs
-      - ./server-config:/config
       - ./server/src:/home/techiaith/app
-    entrypoint: ["supervisord", "-c", "/config/supervisord.conf"]
+    entrypoint: ['python', '-m', 'uvicorn',
+                 'bombe.translation.api.views:app',
+                 '--host', '0.0.0.0',
+                 '--port', '8000']
     ports:
       - "8000:8000" # Fast API
       - "8880:8080" # marian-server WebSocket

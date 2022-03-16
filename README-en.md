@@ -4,8 +4,9 @@ This project contains code, scripts and documentation which enables
 you to create your own [Marian NMT][1] machine translation
 system.
 
-If you have docker installed and running on your system, then it's
-easy get started by installing with one of the docker images provided:
+If you have a system having a [supported NVIDIA graphics card][14],
+with docker installed and running on your system, then it's easy get
+started by installing with one of the docker images provided:
 
 1. [Marian NMT API service][2]
 
@@ -104,3 +105,4 @@ Technoleg Cymraeg 2021-22 project.
 [11]: https://opensource.org/licenses/MTI
 [12]: https://www.microsoft.com/store/productId/9PJPW5LDXLZ5
 [13]: https://www.python.org/
+[14]: https://en.wikipedia.org/wiki/CUDA#GPUs_supported

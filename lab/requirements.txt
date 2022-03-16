@@ -28,5 +28,5 @@ supervisor==4.2.4
 tensorboard==2.7.0
 tensorboardX==2.4.1
 uvicorn==0.16.0
-git+https://oauth:${GITLAB_OAUTH_TOKEN}@storfa.techiaith.cymru/cyfieithu/archgof-client.git@v2022.03.1
-git+https://oauth:${GITLAB_OAUTH_TOKEN}@storfa.techiaith.cymru/cyfieithu/techiaith-utils.git@v2022.03.1
+git+https://github.com/techiaith/archgof-client.git@v22.03
+git+https://github.com/techiaith/techiaith-utils.git@v22.03
