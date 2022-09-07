@@ -17,7 +17,7 @@ import sacrebleu
 import sentencepiece as spm
 import srsly
 
-from . import scripts, templates
+from . import templates
 from .utils import commands, fs
 
 
@@ -34,11 +34,13 @@ def _enumerated_line_map(fp):
                 for (i, line) in enumerate(fp, start=1))
 
 
-def write_combined_test_sets(src_path: Path,
-                             ref_path: Path,
-                             hyp_path: Path,
-                             out_path: Optional[Union[Path, io.BytesIO]]=None,
-                             n_samples: Optional[int]=381):
+def write_combined_test_sets(
+        src_path: Path,
+        ref_path: Path,
+        hyp_path: Path,
+        out_path: Optional[Union[Path, io.BytesIO]] = None,
+        n_samples: Optional[int] = 381
+):
     if isinstance(out_path, (str, Path)):
         out_fp = fs.open_utf8(out_path, mode='w', encoding='utf-8')
     elif hasattr(out_path, 'write'):
@@ -72,10 +74,9 @@ def write_combined_test_sets(src_path: Path,
     return out_fp.name
 
 
-
 def _sentence_iterator(paths):
     for path in paths:
-        with open(path, encoding='utf-8') as fp:
+        with fs.open_utf8(path) as fp:
             for line in fp:
                 yield line.rstrip()
 
@@ -83,7 +84,7 @@ def _sentence_iterator(paths):
 def get_vocab_path(langs: Union[LanguagePair, Tuple],
                    models_dir: Path) -> Path:
     vocab_filename = f'vocab.{langs.source}-{langs.target}.spm'
-    return Path(models_dir, vocab_filename)
+    return models_dir / vocab_filename
 
 
 def create_spm_vocab(config_path: Path,
@@ -128,10 +129,8 @@ def configure(langs: Union[LanguagePair, Tuple],
     langs = LanguagePair(*langs)
     config = read_config_template()
     vocabs = list(repeat(str(vocab_path), len(langs)))
-    with ir.path(scripts, 'validation.sh') as valid_script_path:
-        config['vocabs'] = vocabs
-        config['valid-script-path'] = str(valid_script_path)
-    with open(config_path, 'w') as fp:
+    config['vocabs'] = vocabs
+    with fs.open_utf8(config_path, 'w') as fp:
         fp.write(srsly.yaml_dumps(config))
 
 
@@ -145,15 +144,12 @@ def train(langs: Union[LanguagePair, Tuple],
           valid_sets: Tuple[Path]):
     """Run Marian NMT training with YAML configuration file `config`."""
     langs = LanguagePair(*langs)
-    valid_corpus = valid_sets[-1]
-    valid_script_args = (langs.target, str(valid_corpus))
     extra_config = {
         '--log': str(log),
         '--valid-log': str(valid_log),
         '--model': str(model),
         '--train-sets': ' '.join(map(str, train_sets)),
         '--valid-sets': ' '.join(map(str, valid_sets)),
-        '--valid-script-args': ' '.join(valid_script_args),
         '--valid-translation-output': str(valid_translation_output),
     }
     cmd_args = ['marian', '-c', str(config_path)]
@@ -233,7 +229,7 @@ def score(langs: LanguagePair,
     Returns the result of `sacrebleu.BLEU.corpus_score(ref, hyp)`.
     """
     split_subdir = models_dir.stem
-    trg_ref_path = Path(work_dir, f'{test_set_prefix}.{langs.target}')
+    trg_ref_path = work_dir / f'{test_set_prefix}.{langs.target}'
     target_path = partial(_trg_lang_path_with_suffix,
                           trg_ref_path,
                           split_subdir,
@@ -243,7 +239,7 @@ def score(langs: LanguagePair,
     decoder_config = models_dir / DECODER_CONFIG_FILENAME
     input_path = work_dir / f'{test_set_prefix}.{langs.source}'
     output_filename = input_path.stem + f'.{langs.target}.output'
-    output_path = Path(work_dir, split_subdir) / output_filename
+    output_path = work_dir / split_subdir / output_filename
     model = models_dir / 'model.npz.best-bleu-detok.npz'
     is_decoded = all(path.exists() for path in (trg_ref_path, output_path))
     if not is_decoded:

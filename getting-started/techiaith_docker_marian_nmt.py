@@ -8,6 +8,7 @@ import json
 import os
 import subprocess as sp
 import sys
+import time
 
 
 DOCKER_COMPOSE_TEMPLATE = """\
@@ -15,12 +16,12 @@ version: "3.7"
 
 services:
   techiaith-marian-nmt:
-    image: techiaith/marian-nmt-api:{version}
+    image: techiaith/docker-marian-nmt-api:{version}
     container_name: "{container_name}"
     environment:
       MARIAN_MODEL_NAME: "{marian_model_name}"
     volumes:
-      - ./server-models:/models
+      - {base_dir}/server-models:/models
     entrypoint: ['python', '-m', 'uvicorn',
                  'bombe.translation.api.views:app',
                  '--host', '0.0.0.0',
@@ -45,7 +46,7 @@ def setup_directories(root: Path, model_name: str) -> Dict[str, Path]:
     root_dir.mkdir(parents=True, exist_ok=True)
     paths = {'config': root_dir / 'server-config',
              'logs': root_dir / 'server-logs',
-             'models': root_dir / 'models-dir' / model_name}
+             'models': root_dir / 'server-models' / model_name}
     for path in paths.values():
         path.mkdir(parents=True, exist_ok=True)
     return paths
@@ -109,6 +110,8 @@ def test_api():
         print('Error: API Server failed to run!')
         print('\tStatus:', response.status)
         print('\tResponse:', response.read())
+        print('Please type the following command to diagnose the error:')
+        print('\tdocker compose logs')
     else:
         print(f'API server is up and running at {url}')
 
@@ -153,40 +156,46 @@ def marian_nmt_status(from_dir, container_name):
 
 
 if __name__ == '__main__':
-    default_base_dir = os.path.expanduser('~/techiaith-docker-marian-nmt')
+    default_base_dir = os.getcwd()
     ap = argparse.ArgumentParser()
     ap.add_argument('--repo', default='techiaith/docker-marian-nmt')
     ap.add_argument('--release', default='latest')
     ap.add_argument('--base-dir', default=default_base_dir)
     ap.add_argument('--container-name', default='techiaith-marian-nmt')
     ap.add_argument('--model-name', default='iechyd-a-gofal')
-    ap.add_argument('--no-download-assets', action='store_true')
+    ap.add_argument('--install', action='store_true')
     ap.add_argument('--run', action='store_true')
     ap.add_argument('--stop', action='store_true')
     ap.add_argument('--status', action='store_true')
-    ap.add_argument('--test-api', action='store_true')
     ns = ap.parse_args()
     base_dir = Path(ns.base_dir)
     dirs = setup_directories(base_dir, ns.model_name)
-    print(f'Techiaith Marian NMT Directory: {base_dir}', flush=True)
     release = get_release(ns.repo, ns.release)
     tag_name = release['tag_name']
     models_dir = dirs['models']
-    if not ns.no_download_assets:
+    compose_path = Path(base_dir, 'docker-compose.yml')
+    if ns.install:
         assets = download_assets(release, models_dir)
         install_assets(assets, models_dir)
-    compose_path = Path(base_dir, 'docker-compose.yml')
-    if not compose_path.exists():
-        env_vars = dict(version=tag_name,
-                        marian_model_name=ns.model_name,
-                        container_name=ns.container_name)
-        configure_docker_compose(ns.repo, env_vars, compose_path)
-    if ns.run:
-        run_marian_nmt(base_dir, ns.container_name, ns.model_name)
-    elif ns.status:
+        if not compose_path.exists():
+            env_vars = dict(version=tag_name,
+                            marian_model_name=ns.model_name,
+                            container_name=ns.container_name,
+                            base_dir=base_dir)
+            configure_docker_compose(ns.repo, env_vars, compose_path)
+    uniopts = [ns.status, ns.stop, ns.run]
+    if uniopts.count(True) > 1:
+        print('Please use only one of --status, --stop, --run')
+        sys.exit(1)
+    if ns.status:
         marian_nmt_status(ns.base_dir, ns.container_name)
     elif ns.stop:
         stop_marian_nmt(ns.base_dir, ns.container_name)
-        sys.exit()
-    if ns.test_api and not ns.stop:
+    elif ns.run:
+        run_marian_nmt(base_dir, ns.container_name, ns.model_name)
+        time.sleep(1)
         test_api()
+    else:
+        if not ns.install:
+            print('Please specify at least one option, see --help for more.')
+            sys.exit(1)

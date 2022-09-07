@@ -1,17 +1,16 @@
 from typing import Dict, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class TranslationRequest(BaseModel):
-    text: str
-    source_language: Optional[str] = 'en'
-    target_language: Optional[str] = 'cy'
+    text: str = Field(example='I have a headache.')
+    source_language: Optional[str] = Field(default='en', example='en')
+    target_language: Optional[str] = Field(default='cy', example='cy')
 
 
 class Translated(BaseModel):
-    text: str
-    language: str
+    text: str = Field(example='Mae gen i gur pen.')
 
 
 class ServerConfig(BaseModel):

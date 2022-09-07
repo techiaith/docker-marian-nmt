@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.3
 FROM nvidia/cuda:11.6.0-devel-ubuntu20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -8,6 +8,7 @@ ARG app_user
 ARG uid
 ARG gid
 ARG marian_compile_server
+ARG requirements_file
 ARG release_wheel
 
 ENV USER=$app_user
@@ -65,7 +66,7 @@ USER $USER
 # Build Marian.
 RUN git clone https://github.com/marian-nmt/marian $MARIANPATH && \
     cd $MARIANPATH && \
-    git checkout tags/1.10.0 -b 1.10.0 && \
+    git checkout tags/1.11.0 -b 1.11.0 && \
     mkdir -p $MARIANPATH/build
 
 WORKDIR $MARIANPATH/build
@@ -84,13 +85,11 @@ RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py39_4.1
     echo PATH=$CONDA_HOME/bin:$PATH >> $HOME/.bashrc && \
     conda install -c conda-forge cld2-cffi
 
-COPY supervisord.conf .env $HOME/
-
 # .whl file should only exist if doing a release.
-COPY requirements.txt *.whl /tmp/
+COPY requirements.txt $requirements_file *.whl /tmp/
+COPY .env $HOME/.
 
-# Install app requirements.
 RUN $CONDA_HOME/bin/python -m pip install --no-cache-dir -r /tmp/requirements.txt
-RUN if [[ ! -z $release_wheel ]] ; then echo "Installing $RELEASE_WHEEL" && $CONDA_HOME/bin/python -m pip install $RELEASE_WHEEL; else echo "RELEASE WHEEL NOT FOUND: $RELEASE_WHEEL"; fi
+RUN if [[ ! -z $release_wheel ]] ; then $CONDA_HOME/bin/python -m pip install $RELEASE_WHEEL; fi
 
 WORKDIR $HOME

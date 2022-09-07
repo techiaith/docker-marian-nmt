@@ -32,14 +32,14 @@ def cli(ctx):
 @click.option('--classified-label', default='Health')
 @click.option('--unclassified-label', default='Unknown')
 @click.option('--hunspell-dir', type=click.Path(), default='/dictionaries')
+@click.option('--data-dir', type=click.Path(), default='data/src')
 @experiment_dir_option('config')
-@experiment_dir_option('data', 'data/src')
+@experiment_dir_option('export')
 @experiment_dir_option('logs')
 @experiment_dir_option('models')
 @experiment_dir_option('results')
-@experiment_dir_option('work')
-@experiment_dir_option('export', 'data/export')
 @experiment_dir_option('spelling')
+@experiment_dir_option('work')
 @click.pass_context
 def new(ctx, comment, **params):
     langs = params['langs']
@@ -79,8 +79,8 @@ def list_sessions(ctx, show_all, n_entries):
 @click.option('--classified-label', default='Health')
 @click.option('--unclassified-label', default='Unknown')
 @click.option('--hunspell-dir', type=click.Path(), default='/dictionaries')
+@click.option('--data-dir', '/data/bombe')
 @experiment_dir_option('config')
-@experiment_dir_option('data', 'data/src')
 @experiment_dir_option('logs')
 @experiment_dir_option('models')
 @experiment_dir_option('results')
@@ -90,13 +90,14 @@ def list_sessions(ctx, show_all, n_entries):
 @click.pass_context
 def use(ctx, training_session_id, force, **params):
     ts = _get_ts(ctx, training_session_id)
-    if ts is None or force:
+    if force or ts is None:
         (langs, ident) = training_session_id.split('_')
         ts = training.Session(langs, ident, comment=params.get('comment'))
+        params['export_columns'] = sentences.Translation._fields
         ts.settings.update(params)
         ts.save()
         ts = ts.load(training_session_id)
-    else:
+    if ts is None:
         echo(f'Training session {training_session_id} not found')
 
 
@@ -177,6 +178,14 @@ def view(ctx, training_session_id):
         if isinstance(v, (tuple, list)):
             v = ', '.join(v)
         echo(f'{k:{padlen}} {v}')
+
+
+@cli.command()
+@click.option('-s', '--training-session-id')
+@click.pass_context
+def rm(ctx, training_session_id):
+    ts = _get_ts(ctx, training_session_id)
+    ts.delete()
 
 
 if __name__ == '__main__':

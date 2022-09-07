@@ -50,14 +50,12 @@ def export_and_clean(ctx, num_procs):
     export_dir = params['export_dir']
     columns = params['export_columns']
     spelling_dir = params['spelling_dir']
-    classifier = itemgetter(5)  # 5th element of source path
-    path_seg_to_source_langs = itemgetter(6)  # 6th element of soruce path
+    classifier = itemgetter(2)  # 5th element of source path
     spell_checkers = {lang: SpellCheck(lang, dict_dir, spelling_dir)
                       for lang in ts.langs}
     clean = partial(sentences.clean,
                     ts.langs,
                     classifier,
-                    path_seg_to_source_langs,
                     spell_checkers,
                     columns,
                     export_dir)

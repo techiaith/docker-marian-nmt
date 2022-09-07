@@ -4,7 +4,6 @@
 
   function setSelectionRange(input, selectionStart, selectionEnd) {
     if (input.setSelectionRange) {
-      input.focus();
       input.setSelectionRange(selectionStart, selectionEnd);
     } else if (input.createTextRange) {
       var range = input.createTextRange();
@@ -140,6 +139,7 @@
         enableButton('#btn-reset');
         disableButton('#btn-translate');
       });
+    $('#source_text').empty();
   }
 
   $(document).ready(function(e) {

@@ -1,5 +1,9 @@
 version: "3.7"
 
+networks:
+  mt:
+    name: techiaith
+
 services:
   bombe-lab:
     image: techiaith/marian-nmt-lab:0.1
@@ -10,11 +14,13 @@ services:
       args:
         marian_compile_server: "${MARIAN_COMPILE_SERVER:-off}"
     volumes:
+      - /data:/data
       - ./dictionaries:/dictionaries
-      - ./experiments:/experiments
+      - /data/bombe/experiments:/experiments
       - ./notebooks:/notebooks
-      - ./server-models:/server-models
+      - /data/bombe/server-models:/server-models
       - ./lab/src:/home/techiaith/app
+      - ./lab/supervisord.conf:/home/techiaith/supervisord.conf
     entrypoint: ["supervisord", "-c", "/home/techiaith/supervisord.conf"]
     ports:
       - "8888:8888" # tensorboard graphs
@@ -27,19 +33,22 @@ services:
           devices:
             - driver: nvidia
               capabilities: [gpu]
-  bombe-server:
+  bombe-server_cy-en:
     image: techiaith/marian-nmt-api:0.1
     runtime: nvidia
-    container_name: bombe-api
+    container_name: bombe-api_cy-en
     build:
       context: ./server
       args:
         marian_compile_server: "${MARIAN_COMPILE_SERVER:-on}"
     environment:
       - "MARIAN_MODEL_NAME=${MARIAN_MODEL_NAME}"
+      - "MARIAN_WS_PORT=8080"
+      - "SOURCE_LANGUAGE=cy"
+      - "TARGET_LANGUAGE=en"
       - "API_ALLOW_CORS_ORIGINS=${API_ALLOW_CORS_ORIGINS}"
     volumes:
-      - ./server-models:/models
+      - /data/bombe/server-models:/models
       - ./server/src:/home/techiaith/app
     entrypoint: ['python', '-m', 'uvicorn',
                  'bombe.translation.api.views:app',
@@ -55,10 +64,42 @@ services:
           devices:
             - driver: nvidia
               capabilities: [gpu]
+  bombe-server_en-cy:
+    image: techiaith/marian-nmt-api:0.1
+    runtime: nvidia
+    container_name: bombe-api_en-cy
+    build:
+      context: ./server
+      args:
+        marian_compile_server: "${MARIAN_COMPILE_SERVER:-on}"
+    environment:
+      - "MARIAN_MODEL_NAME=${MARIAN_MODEL_NAME}"
+      - "MARIAN_WS_PORT=8082"
+      - "SOURCE_LANGUAGE=en"
+      - "TARGET_LANGUAGE=cy"
+      - "API_ALLOW_CORS_ORIGINS=${API_ALLOW_CORS_ORIGINS}"
+    volumes:
+      - /data/bombe/server-models:/models
+      - ./server/src:/home/techiaith/app
+    entrypoint: ['python', '-m', 'uvicorn',
+                 'bombe.translation.api.views:app',
+                 '--host', '0.0.0.0',
+                 '--port', '8002']
+    ports:
+      - "8002:8002" # Fast API
+      - "8882:8082" # marian-server WebSocket
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+
 volumes:
   dictionaries:
   experiments:
   notebooks:
   server-config:
   server-logs:
-  server-models:
+  models:

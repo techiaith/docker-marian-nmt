@@ -3,10 +3,8 @@ dim-vocabs:
   - 50000
 valid-freq: 10000
 valid-metrics: 
-  - bleu-detok
-  - cross-entropy
-  - perplexity
   - ce-mean-words
+  - bleu-detok
 cost-type: ce-mean-words
 early-stopping: 5
 type: transformer

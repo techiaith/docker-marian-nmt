@@ -4,6 +4,7 @@ import datetime
 import hashlib
 import pickle
 import re
+import shutil
 import uuid
 
 from techiaith.utils.bitext import LanguagePair
@@ -173,6 +174,7 @@ class Session:
             self._save(sessions)
 
     def _save(self, sessions: dict):
+        self._cleanup(sessions)
         with open(self.path(), 'wb') as fp:
             pickle.dump(sessions, fp)
 
@@ -188,6 +190,33 @@ class Session:
         self.ensure_folders_exist()
         self._save(sessions)
 
+    def _cleanup(self, sessions):
+        idents = list(sessions)
+        if self.current_session_marker in idents:
+            idents.remove(self.current_session_marker)
+        for k in idents:
+            path = self.folder / k
+            if not path.exists():
+                del sessions[k]
+
+    def delete(self):
+        path = self.path()
+        sessions = {}
+        if path.is_file():
+            with open(self.path(), 'rb') as fp:
+                sessions.update(pickle.load(fp))
+        tsid = str(self)
+        if tsid in sessions:
+            print(f'Removing training session {tsid}')
+            prompt = input('This will delete all data [Y|n]: ').lower()
+            if prompt.startswith('y'):
+                exp_dir = self.folder / tsid
+                if exp_dir.is_dir():
+                    shutil.rmtree(exp_dir)
+                self._save(sessions)
+                return True
+        return False
+
     def get_progress(self):
         return self._train_progress
 
@@ -202,7 +231,7 @@ class Session:
 
     def kfold_split_path(self, topic: str, k: int, *leafs) -> Path:
         path = Path(self.folders[f'{topic}_dir'],
-                    f'split_{k}',
+                    'split_{:02d}'.format(k),
                     *leafs)
         if leafs:
             folder = path.parent

@@ -1,7 +1,6 @@
 from collections import defaultdict, namedtuple
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
-import csv
 import os
 
 from techiaith.utils.bitext import LanguagePair
@@ -19,14 +18,12 @@ TrainingSets = namedtuple('TrainingSets', _tset_labels)
 sets = TrainingSets(*_tset_labels)
 
 
-def _to_csv(dataset: Union[pd.DataFrame, pd.Series],
-            path: Union[str, Path],
-            **kw) -> None:
-    dataset.to_csv(path,
-                   header=kw.pop('header', 0),
-                   index=kw.pop('index', False),
-                   quoting=kw.pop('quoting', csv.QUOTE_NONNUMERIC),
-                   **kw)
+def _to_disk(dataset: Union[pd.DataFrame, pd.Series],
+             path: Union[str, Path],
+             **kw) -> None:
+    with open(path, 'w') as fp:
+        for text in dataset:
+            fp.write(f'{text}\n')
 
 
 def _ensure_unique(test_set, train_set):
@@ -81,7 +78,6 @@ def kfold_cv_split(langs: LanguagePair,
                    k: int,
                    test_size: float) -> Dict[str, pd.DataFrame]:
     splits = defaultdict(list)
-    # folds = np.array_split(corpus.sample(frac=1), 10)
     for _ in range(k):
         df = corpus.sample(frac=1)
         (train_set, valid_set) = classified_split(langs,
@@ -130,7 +126,7 @@ def save(train_sets: Dict[str, pd.DataFrame],
     for (lang, col_name) in zip(langs, col_names):
         path = Path(storage_path, f'corpus.test.{lang}')
         df = test_set[col_name]
-        _to_csv(df, path, columns=(col_name,))
+        _to_disk(df, path, columns=(col_name,))
         paths.append(path)
     labels = tuple(train_sets)
     for label in labels:
@@ -142,7 +138,7 @@ def save(train_sets: Dict[str, pd.DataFrame],
                                                    lang=lang)
                 sents = split[col_name]
                 path = Path(storage_path, filename)
-                _to_csv(sents, path, columns=(col_name,))
+                _to_disk(sents, path, columns=(col_name,))
                 paths.append(path)
     return paths
 

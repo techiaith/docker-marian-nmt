@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1.3
 FROM nvidia/cuda:11.6.0-devel-ubuntu20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -8,6 +8,7 @@ ARG app_user
 ARG uid
 ARG gid
 ARG marian_compile_server
+ARG requirements_file
 ARG release_wheel
 
 ENV USER=$app_user
@@ -15,7 +16,6 @@ ENV UID=$uid
 ENV GID=$gid
 ENV HOME=/home/$USER
 ENV APP_DIR=$HOME/app
-ENV RELEASE_WHEEL=/tmp/$release_wheel
 
 RUN build_deps="curl" && \
     apt update && \
@@ -65,7 +65,7 @@ USER $USER
 # Build Marian.
 RUN git clone https://github.com/marian-nmt/marian $MARIANPATH && \
     cd $MARIANPATH && \
-    git checkout tags/1.10.0 -b 1.10.0 && \
+    git checkout tags/1.11.0 -b 1.11.0 && \
     mkdir -p $MARIANPATH/build
 
 WORKDIR $MARIANPATH/build
@@ -78,6 +78,8 @@ RUN cmake $MARIANPATH \
 WORKDIR $MARIANPATH/scripts
 RUN git clone https://github.com/marian-nmt/moses-scripts.git
 
+WORKDIR $HOME
+
 # Setup and install conda, use for python.
 RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py39_4.11.0-Linux-x86_64.sh && \
     sh miniconda.sh -b -p $CONDA_HOME && \
@@ -86,11 +88,9 @@ RUN curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py39_4.1
 
 COPY supervisord.conf $HOME/
 
-# .whl file should only exist if doing a release.
-COPY requirements.txt *.whl /tmp/
+COPY $requirements_file /tmp/requirements.txt
+COPY $release_wheel /tmp/$release_wheel
 
-# Install app requirements.
+# Install app requirements and all other project dependencies
 RUN $CONDA_HOME/bin/python -m pip install --no-cache-dir -r /tmp/requirements.txt
-RUN if [[ ! -z $release_wheel ]] ; then echo "Installing $RELEASE_WHEEL" && $CONDA_HOME/bin/python -m pip install $RELEASE_WHEEL; else echo "RELEASE WHEEL NOT FOUND: $RELEASE_WHEEL"; fi
-
-WORKDIR $HOME
+RUN if [[ ! -z $release_wheel ]] ; then $CONDA_HOME/bin/python -m pip install /tmp/$release_wheel; fi

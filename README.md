@@ -1,1 +1,1 @@
-README-cy.md
+docs/CY.md

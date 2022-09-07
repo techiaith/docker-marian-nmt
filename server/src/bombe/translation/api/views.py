@@ -3,6 +3,7 @@
 
 import os
 import importlib.resources as ir
+from pathlib import Path
 from typing import Dict
 
 from dotenv import load_dotenv, find_dotenv
@@ -22,8 +23,21 @@ with ir.path(data, 'example_translation_request.json') as ex_path:
     with open(ex_path) as fp:
         example_translation_request = srsly.json_loads(fp.read())
 
-marian_server = controllers.MarianServer(os.getenv('MARIAN_CONFIG_PATH'),
-                                         os.getenv('MARIAN_WS_ADDRESS'))
+source_lang = os.getenv('SOURCE_LANGUAGE')
+
+target_lang = os.getenv('TARGET_LANGUAGE')
+
+model_name = os.getenv('MARIAN_MODEL_NAME')
+
+config_path = Path('/models',
+                   model_name,
+                   f'{source_lang}-{target_lang}',
+                   'model.npz.decoder.yml')
+
+ws_port = os.getenv('MARIAN_WS_PORT')
+
+marian_server = controllers.MarianServer(config_path, ws_port)
+
 
 app = FastAPI(
     title='API Gwasanaeth Cyfieithu Peirianyddol',
@@ -57,8 +71,8 @@ def info():
 
 
 @app.post('/api/translate', response_model=Dict[str, str])
-async def translate(item: TranslationRequest, tags=['translation']):
-    """Translation sentences from source language to target language.."""
+async def translate(item: TranslationRequest):
+    """Translate sentences from source language to target language."""
     src_lang = item.source_language or os.getenv('SOURCE_LANGUAGE')
     trg_lang = item.target_language or os.getenv('TARGET_LANGUAGE')
     return await marian_server.translate(item.text, src_lang, trg_lang)
