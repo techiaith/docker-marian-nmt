@@ -14,11 +14,10 @@ services:
       args:
         marian_compile_server: "${MARIAN_COMPILE_SERVER:-off}"
     volumes:
-      - /data:/data
       - ./dictionaries:/dictionaries
-      - /data/bombe/experiments:/experiments
+      - ./data/experiments:/experiments
       - ./notebooks:/notebooks
-      - /data/bombe/server-models:/server-models
+      - ./data/server-models:/server-models
       - ./lab/src:/home/techiaith/app
       - ./lab/supervisord.conf:/home/techiaith/supervisord.conf
     entrypoint: ["supervisord", "-c", "/home/techiaith/supervisord.conf"]

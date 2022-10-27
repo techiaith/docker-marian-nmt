@@ -5,7 +5,7 @@ packages = find_namespace_packages('src')
 
 setup(
     name='techiaith-marian-nmt-lab',
-    version='v22.09',
+    version='22.10',
     packages=packages,
     package_dir={'': 'src'},
     package_data={'bombe.translation.api.data': [

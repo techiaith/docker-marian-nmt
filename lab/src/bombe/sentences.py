@@ -42,10 +42,9 @@ def is_suspicious_content(langs: LanguagePair,
 def clean_translations(
         source_path: Path,
         langs: Union[LanguagePair, Tuple],
-        classifier: Callable,
         spell_checkers: Dict[str, SpellCheck]
 ) -> Generator[Translation, None, None]:
-    label = classifier(source_path.parts)
+    label = source_path.parent.parts[-1]
     bitext_seq = to_bitext(source_path, langs)
     filter_fn = partial(is_suspicious_content, langs)
     filtered = filterfalse(filter_fn, bitext_seq)
@@ -76,7 +75,6 @@ def _to_csv(translations, columns, export_path):
 
 
 def clean(langs: LanguagePair,
-          classifier: Callable,
           spell_checkers: Dict[str, SpellCheck],
           columns: Tuple,
           export_dir: Path,
@@ -85,7 +83,6 @@ def clean(langs: LanguagePair,
     export_path = export_dir / export_filename
     translations = clean_translations(source_path,
                                       langs,
-                                      classifier,
                                       spell_checkers)
     _to_csv(translations, columns, export_path)
     for lang in langs:

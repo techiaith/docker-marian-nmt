@@ -2,7 +2,6 @@ from decimal import Decimal
 from functools import partial
 from itertools import repeat
 from multiprocessing import Pool
-from operator import itemgetter
 from pathlib import Path
 import shutil
 
@@ -50,12 +49,10 @@ def export_and_clean(ctx, num_procs):
     export_dir = params['export_dir']
     columns = params['export_columns']
     spelling_dir = params['spelling_dir']
-    classifier = itemgetter(2)  # 5th element of source path
     spell_checkers = {lang: SpellCheck(lang, dict_dir, spelling_dir)
                       for lang in ts.langs}
     clean = partial(sentences.clean,
                     ts.langs,
-                    classifier,
                     spell_checkers,
                     columns,
                     export_dir)
