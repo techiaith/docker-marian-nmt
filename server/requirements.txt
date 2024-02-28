@@ -1,5 +1,5 @@
 click==8.0.3
-fastapi==0.70.0
+fastapi==0.109.1
 lxml==4.9.1
 passlib==1.7.4
 pycld2==0.41
